@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 1
+names: ['snakes']
+
+roboflow:
+  workspace: project-pibs4
+  project: snakes-2y1xf
+  version: 6
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/project-pibs4/snakes-2y1xf/dataset/6
