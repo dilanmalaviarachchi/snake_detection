@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PROJECT NSBM-DETECT SNAKE</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+
+        header {
+            margin-bottom: 20px;
+        }
+
+        header img {
+            max-width: 200px;
+        }
+
+        header h1 {
+            font-size: 36px;
+            margin: 10px 0 5px;
+        }
+
+        header p {
+            font-size: 18px;
+            margin: 0;
+        }
+
+        .output-container {
+            display: flex;
+            justify-content: center;
+        }
+
+        canvas {
+            display: block;
+            border: 1px solid black;
+            margin-top: 10px;
+            max-width: 100%;
+        }
+
+        #uploadInput {
+            display: none;
+        }
+
+        label[for="uploadInput"] {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        label[for="uploadInput"]:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Section -->
+    <header>
+        <img src="https://students.nsbm.ac.lk/img/1nsbm.png">
+        <h1>Machine Learning Project - NSBM</h1>
+        <h1>Detect Snakes</h1>
+    </header>
+
+    <!-- Input field for uploading an image -->
+    <label for="uploadInput">Upload Image</label>
+    <input id="uploadInput" type="file"/>
+
+    <!-- Output Container for Image with Bounding Boxes -->
+    <div class="output-container">
+        <canvas></canvas>
+    </div>
+
+    <script>
+       // "Upload" button onClick handler
+       const input = document.getElementById("uploadInput");
+       input.addEventListener("change",async(event) => {
+           const file = event.target.files[0]; // Get the uploaded file
+           const data = new FormData(); // Create a new FormData object to send the file
+           data.append("image_file",file,"image_file"); // Append the file to the FormData object
+           const response = await fetch("/detect",{ // Send a POST request to the "/detect" endpoint
+               method:"post",
+               body:data
+           });
+           const boxes = await response.json(); // Parse the response as JSON (array of bounding boxes)
+           draw_image_and_boxes(file,boxes); // Call the draw_image_and_boxes function with the file and boxes
+       })
+
+       // Function draws the image and bounding boxes
+       function draw_image_and_boxes(file,boxes) {
+          const img = new Image() // Create a new Image object
+          img.src = URL.createObjectURL(file); // Set the source of the image to the uploaded file
+          img.onload = () => { // When the image has loaded
+              const canvas = document.querySelector("canvas"); // Get the canvas element
+              canvas.width = img.width; // Set the canvas width to match the image width
+              canvas.height = img.height; // Set the canvas height to match the image height
+              const ctx = canvas.getContext("2d"); // Get the 2D drawing context of the canvas
+              ctx.drawImage(img,0,0); // Draw the image on the canvas at coordinates (0,0)
+              ctx.strokeStyle = "#00FF00"; // Set the stroke color to green
+              ctx.lineWidth = 3; // Set the line width to 3 pixels
+              ctx.font = "18px serif"; // Set the font for text
+              boxes.forEach(([x1,y1,x2,y2,label]) => { // Iterate through each bounding box
+                  ctx.strokeRect(x1,y1,x2-x1,y2-y1); // Draw the bounding box
+                  ctx.fillStyle = "#00ff00"; // Set fill color to green
+                  const width = ctx.measureText(label).width; // Measure the width of the label text
+                  ctx.fillRect(x1,y1,width+10,25); // Draw a filled rectangle for the label background
+                  ctx.fillStyle = "#000000"; // Set text color to black
+                  ctx.fillText(label,x1,y1+18); // Draw the label text
+              });
+          }
+       }
+  </script>  
+</body>
+</html>
